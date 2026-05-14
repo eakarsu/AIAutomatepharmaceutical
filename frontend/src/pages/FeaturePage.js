@@ -34,12 +34,24 @@ function FeaturePage() {
   const [transcribeResult, setTranscribeResult] = useState('');
   const [transcribeLoading, setTranscribeLoading] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', status: 'draft', priority: 'medium' });
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
+  const LIMIT = 20;
 
   const info = CATEGORY_INFO[category] || { name: category, icon: '\u{1F4C4}' };
 
   const loadDocs = useCallback(() => {
-    documents.getByCategory(category, search).then(r => setDocs(r.data)).catch(() => {});
-  }, [category, search]);
+    documents.getByCategory(category, search, page, LIMIT).then(r => {
+      // Handle both paginated {data, pagination} and legacy array response
+      if (Array.isArray(r.data)) {
+        setDocs(r.data);
+        setPagination(null);
+      } else {
+        setDocs(r.data.data || []);
+        setPagination(r.data.pagination || null);
+      }
+    }).catch(() => {});
+  }, [category, search, page]);
 
   useEffect(() => { loadDocs(); }, [loadDocs]);
 
@@ -89,7 +101,7 @@ function FeaturePage() {
           <Link to="/" className="back-btn">&#x2190;</Link>
           <div className="page-title">
             <h1>{info.icon} {info.name}</h1>
-            <p>{docs.length} documents</p>
+            <p>{pagination ? `${pagination.total} documents` : `${docs.length} documents`}</p>
           </div>
         </div>
         <div className="page-actions">
@@ -192,6 +204,15 @@ function FeaturePage() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
+          <button className="btn btn-secondary btn-sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>&#x2190; Prev</button>
+          <span style={{ lineHeight: '32px', color: '#94a3b8', fontSize: 13 }}>Page {page} of {pagination.totalPages}</span>
+          <button className="btn btn-secondary btn-sm" onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))} disabled={page === pagination.totalPages}>Next &#x2192;</button>
+        </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>

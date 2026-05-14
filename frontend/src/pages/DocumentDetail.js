@@ -44,10 +44,12 @@ function DocumentDetail() {
     setAiLoading(prev => ({ ...prev, [type]: true }));
     try {
       const { data } = await fn(id);
-      const result = data.summary || data.analysis || data.extraction || data.assessment;
-      setAiResults(prev => ({ ...prev, [type]: result }));
+      // Support both plain text and structured results
+      const text = data.summary || data.analysis || data.extraction || data.assessment;
+      const structured = data.structured || null;
+      setAiResults(prev => ({ ...prev, [type]: { text, structured, model: data.model, tokens: data.tokens } }));
     } catch (err) {
-      setAiResults(prev => ({ ...prev, [type]: 'Error: Please check your OpenRouter API key in the .env file.' }));
+      setAiResults(prev => ({ ...prev, [type]: { text: 'Error: Please check your OpenRouter API key in the .env file.', structured: null } }));
     } finally {
       setAiLoading(prev => ({ ...prev, [type]: false }));
     }
@@ -174,15 +176,42 @@ function DocumentDetail() {
       {/* AI Results */}
       {Object.entries(aiResults).map(([type, result]) => (
         <div key={type} className="ai-section">
-          <h3>
-            <span style={{ fontSize: '18px' }}>&#x2728;</span>
-            AI {type.charAt(0).toUpperCase() + type.slice(1)} Result
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+            <h3>
+              <span style={{ fontSize: '18px' }}>&#x2728;</span>
+              AI {type.charAt(0).toUpperCase() + type.slice(1)} Result
+            </h3>
+            {result.model && (
+              <span style={{ fontSize: 11, color: '#64748b' }}>{result.model} · {result.tokens} tokens</span>
+            )}
+          </div>
+
+          {/* Structured data badges */}
+          {result.structured && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+              {result.structured.compliance_status && (
+                <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 99, background: result.structured.compliance_status === 'compliant' ? '#14532d' : result.structured.compliance_status === 'non_compliant' ? '#7f1d1d' : '#78350f', color: '#e2e8f0' }}>
+                  {result.structured.compliance_status.replace('_', ' ')}
+                </span>
+              )}
+              {result.structured.risk_level && (
+                <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 99, background: '#1e1b4b', color: '#c7d2fe' }}>
+                  Risk: {result.structured.risk_level}
+                </span>
+              )}
+              {result.structured.risk_score !== undefined && (
+                <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 99, background: '#0f172a', color: result.structured.risk_score > 70 ? '#ef4444' : result.structured.risk_score > 40 ? '#f59e0b' : '#10b981' }}>
+                  Score: {result.structured.risk_score}
+                </span>
+              )}
+            </div>
+          )}
+
           {aiLoading[type] ? (
             <div className="ai-loading"><div className="spinner"></div>AI is analyzing...</div>
           ) : (
             <div className="ai-output">
-              <ReactMarkdown>{result}</ReactMarkdown>
+              <ReactMarkdown>{result.text}</ReactMarkdown>
             </div>
           )}
         </div>

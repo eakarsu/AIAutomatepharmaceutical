@@ -71,6 +71,26 @@ function Dashboard() {
       </div>
 
       <div className="features-section">
+        <h2>AI Tools</h2>
+        <div className="features-grid" style={{ marginBottom: 32 }}>
+          {[
+            { path: '/ai-tools/batch', name: 'Batch Analysis', desc: 'Queue multiple documents for parallel AI processing' },
+            { path: '/ai-tools/trends', name: 'Compliance Trends', desc: 'Risk scoring history with anomaly detection' },
+            { path: '/ai-tools/prompts', name: 'Prompt Templates', desc: 'Customize AI system prompts per analysis type' },
+            { path: '/ai-tools/audit', name: 'Audit Trail', desc: 'Immutable log of AI operations and edits' },
+            { path: '/ai-tools/calendar', name: 'Regulatory Calendar', desc: 'Submission deadlines + AI milestone prediction' },
+            { path: '/ai-tools/cross-doc', name: 'Cross-Doc Analysis', desc: 'Find contradictions across related documents' },
+            { path: '/ai-tools/export', name: 'API Export', desc: 'HL7, FHIR, JSON, PDF export formats' },
+            { path: '/ai-tools/cost', name: 'Cost Analytics', desc: 'Token usage, cost attribution, budget tracking' },
+          ].map((f) => (
+            <div key={f.path} className="feature-card" onClick={() => navigate(f.path)} style={{ '--accent': '#a855f7' }}>
+              <div className="card-icon" style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#a855f7' }}>AI</div>
+              <h3>{f.name}</h3>
+              <p>{f.desc}</p>
+              <div className="card-meta"><span className="card-arrow">&#x2192;</span></div>
+            </div>
+          ))}
+        </div>
         <h2>Document Categories</h2>
         <div className="features-grid">
           {FEATURES.map(f => (
