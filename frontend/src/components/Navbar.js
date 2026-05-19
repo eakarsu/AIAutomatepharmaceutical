@@ -17,6 +17,7 @@ function Navbar({ user, onLogout }) {
     { path: '/ai-tools/export', label: 'API Export' },
     { path: '/ai-tools/cost', label: 'Cost Analytics' },
     { path: '/ai-tools/extra', label: 'Classify / AE / GMP' },
+    { path: '/custom-views', label: 'GMP Views' },
   ];
 
   return (

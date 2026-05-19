@@ -92,3 +92,6 @@ app.use('/api/gap-collaboration-commenting-threads', require('./routes/gap_colla
 app.use('/api/gap-e-signature-workflow', require('./routes/gap_e_signature_workflow'));
 app.use('/api/gap-regulatory-submission-preparation-ctd-format', require('./routes/gap_regulatory_submission_preparation_ctd_format'));
 app.use('/api/gap-outbound-webhooks', require('./routes/gap_outbound_webhooks'));
+
+// === Custom Views: Pharma Automation (batch records, regulatory) ===
+app.use('/api/custom-views', require('./routes/customViews'));

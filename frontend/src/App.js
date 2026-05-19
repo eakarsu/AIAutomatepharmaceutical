@@ -16,6 +16,7 @@ import ApiExport from './pages/ApiExport';
 import CostAnalytics from './pages/CostAnalytics';
 import AIToolsExtra from './pages/AIToolsExtra';
 import ExtensionsPage from './pages/ExtensionsPage'; // Apply pass 5
+import CustomViewsPage from './pages/CustomViewsPage';
 import './App.css';
 
 function App() {
@@ -62,6 +63,7 @@ function App() {
         <Route path="/ai-tools/cost" element={guard(<CostAnalytics />)} />
         <Route path="/ai-tools/extra" element={guard(<AIToolsExtra />)} />
         <Route path="/ai-tools/extensions" element={guard(<ExtensionsPage />)} />
+        <Route path="/custom-views" element={guard(<CustomViewsPage />)} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
