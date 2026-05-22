@@ -112,7 +112,6 @@ function ComplianceTrends() {
           <p style={{ color: '#64748b' }}>No trend data available for this period.</p>
         )}
       </div>
-    </div>
 
       {anomalyResult && (
         <div className="detail-card">

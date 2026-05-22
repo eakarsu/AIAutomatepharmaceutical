@@ -17,7 +17,13 @@ import CostAnalytics from './pages/CostAnalytics';
 import AIToolsExtra from './pages/AIToolsExtra';
 import ExtensionsPage from './pages/ExtensionsPage'; // Apply pass 5
 import CustomViewsPage from './pages/CustomViewsPage';
+import CapaReadinessBoard from './pages/CapaReadinessBoard';
 import './App.css';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
+import TimelineView from './pages/TimelineView';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -48,6 +54,10 @@ function App() {
     <Router>
       {user && <Navbar user={user} onLogout={handleLogout} />}
       <Routes>
+        <Route path="/insights/timeline" element={<TimelineView />} />
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
         <Route path="/login" element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} />
         <Route path="/" element={guard(<Dashboard />)} />
         <Route path="/feature/:category" element={guard(<FeaturePage />)} />
@@ -64,6 +74,7 @@ function App() {
         <Route path="/ai-tools/extra" element={guard(<AIToolsExtra />)} />
         <Route path="/ai-tools/extensions" element={guard(<ExtensionsPage />)} />
         <Route path="/custom-views" element={guard(<CustomViewsPage />)} />
+        <Route path="/capa-readiness-board" element={guard(<CapaReadinessBoard />)} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

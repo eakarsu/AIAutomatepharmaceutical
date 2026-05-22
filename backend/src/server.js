@@ -58,6 +58,7 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/ai', aiRateLimiter, aiRoutes);
 app.use('/api/ai-features', aiRateLimiter, aiFeaturesRoutes);
 app.use('/api/ext', extensionsRoutes); // Apply pass 5: document mgmt + esign + CTD + gateway + OCR
+app.use('/api/capa-readiness-board', require('./routes/capaReadinessBoard'));
 
 // Health check
 app.get('/api/health', (req, res) => {
