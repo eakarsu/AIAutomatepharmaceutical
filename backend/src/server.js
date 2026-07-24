@@ -24,6 +24,7 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '10mb' }));
+app.use('/api', require('../runtimeAcceptance'));
 
 // General rate limiter: 100 requests per 15 minutes per IP
 const generalLimiter = rateLimit({
