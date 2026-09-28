@@ -3,6 +3,7 @@
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 
 const databaseUrl = String(process.env.DATABASE_URL || '');
 const selectedEndpoint = String(process.env.RUNTIME_AI_ENDPOINT || '');
@@ -86,7 +87,11 @@ router.post('/auth/login', (req, res, next) => {
     if (!row) return res.status(401).json({ error: 'Invalid credentials' });
     const [id, userEmail, storedHash, displayName, role] = row.split('\t');
     if (!verifyPassword(password, storedHash)) return res.status(401).json({ error: 'Invalid credentials' });
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = jwt.sign(
+      { id, email: userEmail, role, name: displayName },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
     query('INSERT INTO runtime_app_sessions(token_hash,user_id,expires_at) VALUES(' + literal(sha(token)) + ',' + literal(id) + "::uuid,NOW()+INTERVAL '24 hours')");
     return res.json({ token, user: { id, email: userEmail, name: displayName, role } });
   } catch (error) {

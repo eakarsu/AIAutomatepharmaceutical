@@ -65,7 +65,7 @@ function Login({ onLogin }) {
         </form>
 
         <button className="auto-fill-btn" onClick={autoFill}>
-          &#x26A1; Quick Login - Auto-fill Demo Credentials
+          Auto Fill Demo Credentials
         </button>
       </div>
     </div>
