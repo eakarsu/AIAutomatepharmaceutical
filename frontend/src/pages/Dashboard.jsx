@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { documents } from '../services/api';
 
-const FEATURES = [
+export const FEATURES = [
   { key: 'lab_results', name: 'Lab Results', icon: '\u{1F9EA}', color: '#3b82f6', gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)', desc: 'Transcribe, analyze, and manage laboratory test results including HPLC, dissolution, stability, and microbiology data.' },
   { key: 'fda_compliance', name: 'FDA Compliance', icon: '\u{1F3DB}', color: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #059669)', desc: 'Track FDA regulatory compliance documents, 483 responses, annual product reviews, and inspection readiness.' },
   { key: 'drug_trials', name: 'Drug Trials', icon: '\u{1F489}', color: '#8b5cf6', gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', desc: 'Manage clinical trial documentation from Phase I through post-market surveillance studies.' },

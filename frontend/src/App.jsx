@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import FeaturePage from './pages/FeaturePage';
 import DocumentDetail from './pages/DocumentDetail';
 import Navbar from './components/Navbar';
+import AppSidebar from './components/AppSidebar';
 // AI feature pages (NEW custom features)
 import BatchAnalysis from './pages/BatchAnalysis';
 import ComplianceTrends from './pages/ComplianceTrends';
@@ -52,6 +53,8 @@ function App() {
 
   return (
     <Router>
+      <div className={user ? 'codex-nav-shell' : undefined}>
+      {user && <AppSidebar />}
       {user && <Navbar user={user} onLogout={handleLogout} />}
       <Routes>
         <Route path="/insights/timeline" element={<TimelineView />} />
@@ -77,6 +80,7 @@ function App() {
         <Route path="/capa-readiness-board" element={guard(<CapaReadinessBoard />)} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+      </div>
     </Router>
   );
 }
