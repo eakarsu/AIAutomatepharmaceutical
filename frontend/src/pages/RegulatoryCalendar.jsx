@@ -1,3 +1,5 @@
+import NativeAIControls from '../components/NativeAIControls';
+import FormattedAIReport from '../components/FormattedAIReport';
 import React, { useState, useEffect } from 'react';
 import { aiFeatures } from '../services/api';
 
@@ -87,33 +89,22 @@ function RegulatoryCalendar() {
         {editing && <button className="btn btn-secondary btn-sm" style={{ marginLeft: 8 }} onClick={() => { setEditing(null); setForm(empty); }}>Cancel</button>}
       </div>
 
-      <div className="detail-card">
+      <NativeAIControls busy={predicting} context="regulatory milestone prediction"><div className="detail-card">
         <h3>AI Milestone Timeline Prediction</h3>
         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
           <div className="form-group" style={{ flex: 1 }}>
             <label>Submission Type</label>
-            <select value={predictForm.submission_type} onChange={(e) => setPredictForm({ ...predictForm, submission_type: e.target.value })}>
+            <select data-ai-field="submission_type" value={predictForm.submission_type} onChange={(e) => setPredictForm({ ...predictForm, submission_type: e.target.value })}>
               <option>NDA</option><option>ANDA</option><option>BLA</option><option>IND</option><option>510(k)</option><option>PMA</option>
             </select>
           </div>
           <div className="form-group" style={{ flex: 1 }}>
-            <label>Target Date (optional)</label><input type="date" value={predictForm.target_date} onChange={(e) => setPredictForm({ ...predictForm, target_date: e.target.value })} />
+            <label>Target Date (optional)</label><input data-ai-field="target_date" type="date" value={predictForm.target_date} onChange={(e) => setPredictForm({ ...predictForm, target_date: e.target.value })} />
           </div>
           <button className="btn btn-ai btn-sm" onClick={predict} disabled={predicting}>{predicting ? 'Predicting...' : 'Predict Milestones'}</button>
         </div>
-        {milestones && milestones.milestones && (
-          <div style={{ marginTop: 16 }}>
-            <h4>Predicted Milestones</h4>
-            {milestones.milestones.map((m, i) => (
-              <div key={i} style={{ padding: 8, marginBottom: 6, background: '#0f172a', borderRadius: 4 }}>
-                <strong>{m.name}</strong> <span style={{ color: '#64748b', fontSize: 12 }}>(T-{m.weeks_before_target} weeks)</span>
-                <div style={{ fontSize: 12, color: '#94a3b8' }}>{m.description}</div>
-              </div>
-            ))}
-          </div>
-        )}
-        {milestones && milestones.raw && <pre style={{ marginTop: 12, fontSize: 11 }}>{milestones.raw}</pre>}
-      </div>
+        {milestones && <FormattedAIReport response={milestones} title="Predicted regulatory milestones" />}
+      </div></NativeAIControls>
 
       <div className="detail-card">
         <h3>Upcoming Events ({upcoming.length})</h3>

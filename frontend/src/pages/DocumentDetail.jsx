@@ -1,7 +1,7 @@
+import FormattedAIReport from '../components/FormattedAIReport';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { documents, ai } from '../services/api';
-import ReactMarkdown from 'react-markdown';
 
 function DocumentDetail() {
   const { id } = useParams();
@@ -209,11 +209,7 @@ function DocumentDetail() {
 
           {aiLoading[type] ? (
             <div className="ai-loading"><div className="spinner"></div>AI is analyzing...</div>
-          ) : (
-            <div className="ai-output">
-              <ReactMarkdown>{result.text}</ReactMarkdown>
-            </div>
-          )}
+          ) : <FormattedAIReport response={result} title={`AI ${type.charAt(0).toUpperCase() + type.slice(1)} result`} />}
         </div>
       ))}
     </div>

@@ -1,8 +1,12 @@
+import NativeAIControls from "../components/NativeAIControls";
+import useNativeAIRequest from "../components/useNativeAIRequest";
+import FormattedAIReport from "../components/FormattedAIReport";
 import React, { useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { ai, documents } from '../services/api';
 
 function AIToolsExtra() {
+  const nativeAIRequest = useNativeAIRequest();
+
   const [tab, setTab] = useState('classify');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -33,7 +37,7 @@ function AIToolsExtra() {
   const wrap = async (fn) => {
     setLoading(true); setError(null); setResult(null);
     try {
-      const r = await fn();
+      const r = await nativeAIRequest.run((signal) => fn({ signal }));
       setResult(r.data);
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed');
@@ -48,16 +52,16 @@ function AIToolsExtra() {
 
   const runClassify = () => {
     if (!classifyDocId) { setError('Select a document'); return; }
-    wrap(() => ai.classifyDocument(classifyDocId));
+    wrap((nativeRequestOptions) => ai.classifyDocument(classifyDocId, nativeRequestOptions));
   };
 
   const runAE = () => {
     if (!aeForm.narrative && !aeForm.document_id) { setError('Provide a narrative or document_id'); return; }
-    wrap(() => ai.adverseEventDetect({
+    wrap((nativeRequestOptions) => ai.adverseEventDetect({
       document_id: aeForm.document_id || null,
       narrative: aeForm.narrative,
       patient_summary: aeForm.patient_summary,
-    }));
+    }, nativeRequestOptions));
   };
 
   const runMfg = () => {
@@ -66,12 +70,12 @@ function AIToolsExtra() {
     if (specs === null) return;
     const env = safeParse(mfForm.environment_data_json || '{}', 'environment_data');
     if (env === null) return;
-    wrap(() => ai.manufacturingDeviation({
+    wrap((nativeRequestOptions) => ai.manufacturingDeviation({
       batch_id: mfForm.batch_id,
       batch_record: mfForm.batch_record,
       specifications: specs,
       environment_data: env,
-    }));
+    }, nativeRequestOptions));
   };
 
   const tabs = [
@@ -81,7 +85,7 @@ function AIToolsExtra() {
   ];
 
   return (
-    <div className="main-content">
+    <NativeAIControls busy={nativeAIRequest.busy} onCancel={nativeAIRequest.cancel} context="Automatepharmaceutical"><div className="main-content">
       <div className="page-header" style={{ marginBottom: 20 }}>
         <h1>Extra AI Tools</h1>
         <p>Document classification, pharmacovigilance, and GMP deviation flagging</p>
@@ -102,7 +106,7 @@ function AIToolsExtra() {
             <h3>Classify Document (IND / NDA / BLA / ANDA / CTA / MAA / DMF)</h3>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>Document</label>
-              <select value={classifyDocId} onChange={(e) => setClassifyDocId(e.target.value)}
+              <select data-ai-field="classifyDocId" value={classifyDocId} onChange={(e) => setClassifyDocId(e.target.value)}
                 style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: '#0f172a', color: '#e2e8f0', minWidth: 320 }}>
                 <option value="">Select...</option>
                 {docs.map((d) => (
@@ -121,7 +125,7 @@ function AIToolsExtra() {
             <h3>Adverse Event Detection</h3>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>Existing document (optional)</label>
-              <select value={aeForm.document_id} onChange={(e) => setAeForm({ ...aeForm, document_id: e.target.value })}
+              <select data-ai-field="document_id" value={aeForm.document_id} onChange={(e) => setAeForm({ ...aeForm, document_id: e.target.value })}
                 style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: '#0f172a', color: '#e2e8f0', minWidth: 320 }}>
                 <option value="">— None (use narrative below) —</option>
                 {docs.map((d) => (
@@ -131,14 +135,14 @@ function AIToolsExtra() {
             </div>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>Patient summary</label>
-              <input type="text" value={aeForm.patient_summary}
+              <input data-ai-field="patient_summary" type="text" value={aeForm.patient_summary}
                 onChange={(e) => setAeForm({ ...aeForm, patient_summary: e.target.value })}
                 placeholder="65 y/o female, on metformin"
                 style={{ width: '100%', padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: '#0f172a', color: '#e2e8f0' }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>Narrative</label>
-              <textarea rows={6} value={aeForm.narrative}
+              <textarea data-ai-field="narrative" rows={6} value={aeForm.narrative}
                 onChange={(e) => setAeForm({ ...aeForm, narrative: e.target.value })}
                 placeholder="Patient experienced sudden dyspnea..."
                 style={{ width: '100%', padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: '#0f172a', color: '#e2e8f0' }} />
@@ -154,27 +158,27 @@ function AIToolsExtra() {
             <h3>Manufacturing Deviation Flagging (GMP)</h3>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>Batch ID</label>
-              <input type="text" value={mfForm.batch_id}
+              <input data-ai-field="batch_id" data-ai-example="LOT-2026-0042" type="text" value={mfForm.batch_id}
                 onChange={(e) => setMfForm({ ...mfForm, batch_id: e.target.value })}
                 placeholder="LOT-2026-0042"
                 style={{ width: '100%', padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: '#0f172a', color: '#e2e8f0' }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>Batch record (text or JSON)</label>
-              <textarea rows={6} value={mfForm.batch_record}
+              <textarea data-ai-field="batch_record" rows={6} value={mfForm.batch_record}
                 onChange={(e) => setMfForm({ ...mfForm, batch_record: e.target.value })}
                 placeholder="Granulation step at 27 C, mixing time 14 min..."
                 style={{ width: '100%', padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: '#0f172a', color: '#e2e8f0' }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>Specifications (JSON)</label>
-              <textarea rows={4} value={mfForm.specifications_json}
+              <textarea data-ai-field="specifications_json" rows={4} value={mfForm.specifications_json}
                 onChange={(e) => setMfForm({ ...mfForm, specifications_json: e.target.value })}
                 style={{ width: '100%', padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: '#0f172a', color: '#e2e8f0' }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>Environment data (JSON)</label>
-              <textarea rows={4} value={mfForm.environment_data_json}
+              <textarea data-ai-field="environment_data_json" rows={4} value={mfForm.environment_data_json}
                 onChange={(e) => setMfForm({ ...mfForm, environment_data_json: e.target.value })}
                 style={{ width: '100%', padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: '#0f172a', color: '#e2e8f0' }} />
             </div>
@@ -190,15 +194,10 @@ function AIToolsExtra() {
       {result && (
         <div className="detail-card">
           <h3>Result</h3>
-          {result.summary && (
-            <div className="ai-output"><ReactMarkdown>{result.summary}</ReactMarkdown></div>
-          )}
-          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 600, overflow: 'auto', fontSize: 12, background: '#0f172a', padding: 12, borderRadius: 8 }}>
-            {JSON.stringify(result, null, 2)}
-          </pre>
+          <FormattedAIReport response={result} title={`${tabs.find((item) => item.key === tab)?.label || 'AI'} result`} />
         </div>
       )}
-    </div>
+    </div></NativeAIControls>
   );
 }
 

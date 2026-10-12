@@ -1,7 +1,8 @@
+import NativeAIControls from '../components/NativeAIControls';
+import FormattedAIReport from '../components/FormattedAIReport';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { documents, ai } from '../services/api';
-import ReactMarkdown from 'react-markdown';
 
 const CATEGORY_INFO = {
   lab_results: { name: 'Lab Results', icon: '\u{1F9EA}' },
@@ -118,13 +119,14 @@ function FeaturePage() {
       </div>
 
       {showTranscribe && (
-        <div className="transcribe-section">
+        <NativeAIControls busy={transcribeLoading} context={`${info.name} transcription`}><div className="transcribe-section">
           <h3>&#x2728; AI Document Transcribe & Format</h3>
           <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '16px' }}>
             Paste raw, unstructured text and our AI will professionally format it into a structured pharmaceutical document.
           </p>
           <div className="form-group">
             <textarea
+              data-ai-field="transcribeText"
               value={transcribeText}
               onChange={e => setTranscribeText(e.target.value)}
               placeholder="Paste raw text here... (e.g., handwritten notes, unformatted lab results, meeting minutes)"
@@ -137,12 +139,8 @@ function FeaturePage() {
           {transcribeLoading && (
             <div className="ai-loading"><div className="spinner"></div>AI is processing your text...</div>
           )}
-          {transcribeResult && (
-            <div className="ai-output" style={{ marginTop: '16px' }}>
-              <ReactMarkdown>{transcribeResult}</ReactMarkdown>
-            </div>
-          )}
-        </div>
+          {transcribeResult && <FormattedAIReport response={transcribeResult} title={`${info.name} formatted document`} />}
+        </div></NativeAIControls>
       )}
 
       {(report || reportLoading) && (
@@ -150,11 +148,7 @@ function FeaturePage() {
           <h3>&#x1F916; AI Generated Report</h3>
           {reportLoading ? (
             <div className="ai-loading"><div className="spinner"></div>Generating comprehensive report...</div>
-          ) : (
-            <div className="ai-output">
-              <ReactMarkdown>{report}</ReactMarkdown>
-            </div>
-          )}
+          ) : <FormattedAIReport response={report} title={`${info.name} comprehensive report`} />}
         </div>
       )}
 

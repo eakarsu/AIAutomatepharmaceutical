@@ -508,9 +508,10 @@ router.get('/results', authenticateToken, async (req, res) => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
     const offset = (page - 1) * limit;
     const { document_id, analysis_type } = req.query;
+    if (!req.user?.email) return res.status(401).json({ error: 'Sign in to view saved AI results' });
 
-    const conditions = ['1=1'];
-    const params = [];
+    const conditions = ['user_email = $1'];
+    const params = [req.user.email];
 
     if (document_id) { params.push(document_id); conditions.push(`document_id = $${params.length}`); }
     if (analysis_type) { params.push(analysis_type); conditions.push(`analysis_type = $${params.length}`); }

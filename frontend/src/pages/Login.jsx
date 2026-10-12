@@ -7,12 +7,12 @@ function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, demoLoginCredentials) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      const { data } = await auth.login(email, password);
+      const { data } = await auth.login((demoLoginCredentials?.email ?? email), (demoLoginCredentials?.password ?? password));
       localStorage.setItem('pharma_token', data.token);
       onLogin(data.user);
     } catch (err) {
@@ -23,8 +23,15 @@ function Login({ onLogin }) {
   };
 
   const autoFill = () => {
-    setEmail(import.meta.env.VITE_DEMO_EMAIL || '');
-    setPassword(import.meta.env.VITE_DEMO_PASSWORD || '');
+    const demoEmail = import.meta.env.VITE_DEMO_EMAIL || '';
+    const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || '';
+    if (!demoEmail || !demoPassword) {
+      setError('Demo credentials are unavailable in this environment.');
+      return;
+    }
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setError('');
   };
 
   return (
@@ -64,8 +71,8 @@ function Login({ onLogin }) {
           </button>
         </form>
 
-        <button className="auto-fill-btn" onClick={autoFill}>
-          Auto Fill Demo Credentials
+        <button type="button" className="auto-fill-btn" onClick={autoFill}>
+          Fill Demo Credentials
         </button>
       </div>
     </div>

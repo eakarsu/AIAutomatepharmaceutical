@@ -53,6 +53,14 @@ app.get('/api/health', (req, res) => {
 // === Custom Views: Pharma Automation (batch records, regulatory) ===
 app.use('/api/custom-views', authenticateToken, require('./routes/customViews'));
 
+
+// Advisory AI reports only; native execution and approval routes stay unchanged.
+const aiWorkspaceSupport = require("../aiWorkspaceAdapters.cjs");
+const aiWorkspaceDatabase = require("./db.js");
+app.use('/api/report-workspace', require("../aiWorkspace.cjs").createAIWorkspaceRouter({
+  pool: aiWorkspaceDatabase, authenticateToken: aiWorkspaceSupport.runtimeSessionAuth(aiWorkspaceDatabase, require("./middleware/auth.js").authenticateToken),
+  aiRateLimiter: aiWorkspaceSupport.createWorkspaceLimiter(), features: require("../aiWorkspaceFeatures.json"),
+}));
 app.listen(PORT, () => {
   console.log(`Pharma evidence backend running on port ${PORT}`);
 });

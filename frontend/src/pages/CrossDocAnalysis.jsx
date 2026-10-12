@@ -1,5 +1,6 @@
+import NativeAIControls from "../components/NativeAIControls.jsx";
+import FormattedAIReport from '../components/FormattedAIReport';
 import React, { useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { aiFeatures, documents } from '../services/api';
 
 function CrossDocAnalysis() {
@@ -52,8 +53,16 @@ function CrossDocAnalysis() {
     finally { setLoading(false); }
   };
 
+  const fillDocumentPreset = (variant) => {
+    const counts = [2, 3, 5];
+    const ids = allDocs.slice(0, counts[variant]).map((document) => document.id);
+    setSelected(ids);
+    return { filled: ids.length, manual: ids.length >= 2 ? [] : ['at least two documents from the current filtered list'] };
+  };
+  const documentPresets = ['Two-document check', 'Three-document review', 'Five-document review'].map((name, variant) => ({ name, fill: () => fillDocumentPreset(variant) }));
+
   return (
-    <div className="main-content">
+    <NativeAIControls busy={loading} context="cross-document analysis" presets={documentPresets}><div className="main-content">
       <div className="page-header" style={{ marginBottom: 20 }}>
         <h1>Cross-Document Analysis</h1>
         <p>Consistency check across related documents — flag contradictions and missing elements</p>
@@ -62,7 +71,7 @@ function CrossDocAnalysis() {
       <div className="detail-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h3>Select Documents (minimum 2): {selected.length} selected</h3>
-          <input
+          <input data-ai-exclude
             type="text"
             placeholder="Search documents..."
             value={docSearch}
@@ -96,33 +105,10 @@ function CrossDocAnalysis() {
       {result && (
         <div className="detail-card">
           <h3>Analysis Result</h3>
-          <p style={{ fontSize: 12, color: '#64748b' }}>
-            {result.documents.length} documents | Model: {result.model} | {result.tokens} tokens | {result.analyzed_at}
-          </p>
-
-          {result.structured?.overall_consistency_score !== undefined && (
-            <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
-              <div style={{ padding: '8px 16px', background: '#0f172a', borderRadius: 8, textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: result.structured.overall_consistency_score > 70 ? '#10b981' : result.structured.overall_consistency_score > 40 ? '#f59e0b' : '#ef4444' }}>
-                  {result.structured.overall_consistency_score}
-                </div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Consistency Score</div>
-              </div>
-              {result.structured.consistency_issues?.length > 0 && (
-                <div style={{ flex: 1 }}>
-                  <strong style={{ color: '#f59e0b', fontSize: 12 }}>Issues Found ({result.structured.consistency_issues.length})</strong>
-                  <ul style={{ margin: '4px 0 0 16px', fontSize: 12, color: '#94a3b8' }}>
-                    {result.structured.consistency_issues.slice(0, 3).map((i, idx) => <li key={idx}>{i.description}</li>)}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="ai-output"><ReactMarkdown>{result.analysis}</ReactMarkdown></div>
+          <FormattedAIReport response={result} title="Cross-document analysis" />
         </div>
       )}
-    </div>
+    </div></NativeAIControls>
   );
 }
 

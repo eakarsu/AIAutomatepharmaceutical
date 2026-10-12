@@ -1,5 +1,6 @@
+import NativeAIControls from '../components/NativeAIControls';
+import FormattedAIReport from '../components/FormattedAIReport';
 import React, { useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { aiFeatures } from '../services/api';
 
 const CATEGORIES = [
@@ -71,7 +72,7 @@ function ComplianceTrends() {
   };
 
   return (
-    <div className="main-content">
+    <NativeAIControls busy={anomalyLoading} context="compliance anomaly detection"><div className="main-content">
       <div className="page-header" style={{ marginBottom: 20 }}>
         <h1>Compliance Trend Dashboard</h1>
         <p>Historical compliance risk scoring with anomaly detection</p>
@@ -116,47 +117,10 @@ function ComplianceTrends() {
       {anomalyResult && (
         <div className="detail-card">
           <h3>AI Anomaly Detection Results</h3>
-          <p style={{ fontSize: 12, color: '#64748b' }}>Model: {anomalyResult.model} · {anomalyResult.tokens} tokens</p>
-
-          {anomalyResult.anomalies?.trend_direction && (
-            <p style={{ marginBottom: 8 }}>
-              Trend: <strong style={{ color: anomalyResult.anomalies.trend_direction === 'worsening' ? '#ef4444' : anomalyResult.anomalies.trend_direction === 'improving' ? '#10b981' : '#f59e0b' }}>
-                {anomalyResult.anomalies.trend_direction}
-              </strong>
-              {anomalyResult.anomalies.overall_risk_assessment && (
-                <> · Overall risk: <strong>{anomalyResult.anomalies.overall_risk_assessment}</strong></>
-              )}
-            </p>
-          )}
-
-          {anomalyResult.anomalies?.anomalies?.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <strong style={{ color: '#ef4444' }}>Anomalies Detected ({anomalyResult.anomalies.anomalies.length})</strong>
-              {anomalyResult.anomalies.anomalies.map((a, i) => (
-                <div key={i} style={{ padding: '6px 12px', marginTop: 6, background: '#0f172a', borderRadius: 6, borderLeft: '3px solid #ef4444', fontSize: 13 }}>
-                  <strong>{a.date}</strong> — {a.type} (score: {a.risk_score}) <span style={{ color: '#94a3b8' }}>{a.description}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {anomalyResult.anomalies?.recommended_actions?.length > 0 && (
-            <div>
-              <strong style={{ color: '#10b981' }}>Recommended Actions</strong>
-              <ul style={{ margin: '4px 0 0 20px', color: '#94a3b8', fontSize: 13 }}>
-                {anomalyResult.anomalies.recommended_actions.map((a, i) => <li key={i}>{a}</li>)}
-              </ul>
-            </div>
-          )}
-
-          {anomalyResult.anomalies?.analysis_summary && (
-            <div className="ai-output" style={{ marginTop: 12 }}>
-              <ReactMarkdown>{anomalyResult.anomalies.analysis_summary}</ReactMarkdown>
-            </div>
-          )}
+          <FormattedAIReport response={anomalyResult} title="Compliance anomaly detection" />
         </div>
       )}
-    </div>
+    </div></NativeAIControls>
   );
 }
 

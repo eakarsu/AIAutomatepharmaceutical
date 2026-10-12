@@ -1,5 +1,6 @@
+import NativeAIControls from '../components/NativeAIControls';
+import FormattedAIReport from '../components/FormattedAIReport';
 import React, { useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { aiFeatures } from '../services/api';
 
 const ANALYSIS_TYPES = [
@@ -67,7 +68,7 @@ function PromptTemplates() {
   };
 
   return (
-    <div className="main-content">
+    <NativeAIControls busy={previewLoading} context="pharmaceutical prompt template preview"><div className="main-content">
       <div className="page-header" style={{ marginBottom: 20 }}>
         <h1>AI Prompt Templates</h1>
         <p>User-customizable system prompts per analysis type with live preview</p>
@@ -106,13 +107,13 @@ function PromptTemplates() {
             <pre style={{ background: '#020617', padding: 8, borderRadius: 4, fontSize: 11, overflow: 'auto' }}>{it.system_prompt}</pre>
             {previewing === it.id && (
               <div className="ai-output" style={{ marginTop: 12 }}>
-                {previewLoading ? <div className="ai-loading"><div className="spinner"></div>Running preview...</div> : <ReactMarkdown>{previewResult}</ReactMarkdown>}
+                {previewLoading ? <div className="ai-loading"><div className="spinner"></div>Running preview...</div> : <FormattedAIReport response={previewResult} title={`${it.name} preview`} />}
               </div>
             )}
           </div>
         ))}
       </div>
-    </div>
+    </div></NativeAIControls>
   );
 }
 

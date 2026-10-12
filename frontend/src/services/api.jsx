@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -53,9 +53,9 @@ export const ai = {
   batchAnalyze: (document_ids) => api.post('/ai/batch-analyze', { document_ids }),
   findSimilar: (id) => api.post(`/ai/find-similar/${id}`),
   complianceDigest: () => api.post('/ai/compliance-digest'),
-  classifyDocument: (id) => api.post(`/ai/classify-document/${id}`),
-  adverseEventDetect: (data) => api.post('/ai/adverse-event-detect', data),
-  manufacturingDeviation: (data) => api.post('/ai/manufacturing-deviation', data),
+  classifyDocument: (id, nativeRequestOptions = {}) => api.post(`/ai/classify-document/${id}`, undefined, nativeRequestOptions),
+  adverseEventDetect: (data, nativeRequestOptions = {}) => api.post('/ai/adverse-event-detect', data, nativeRequestOptions),
+  manufacturingDeviation: (data, nativeRequestOptions = {}) => api.post('/ai/manufacturing-deviation', data, nativeRequestOptions),
   // AI results history: returns { data, pagination }
   getResults: (params = {}) => api.get('/ai/results', { params }),
   // SSE: returns EventSource URL (include token in query param for SSE)

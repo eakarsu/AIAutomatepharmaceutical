@@ -1,5 +1,6 @@
+import NativeAIControls from "../components/NativeAIControls.jsx";
+import FormattedAIReport from '../components/FormattedAIReport';
 import React, { useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { ai, documents } from '../services/api';
 
 function BatchAnalysis() {
@@ -105,8 +106,16 @@ function BatchAnalysis() {
     });
   };
 
+  const fillDocumentPreset = (variant) => {
+    const counts = [1, 3, 5];
+    const ids = allDocs.slice(0, counts[variant]).map((document) => document.id);
+    setSelected(ids);
+    return { filled: ids.length, manual: ids.length ? [] : ['a document from the current filtered list'] };
+  };
+  const documentPresets = ['Single document', 'Three-document review', 'Five-document review'].map((name, variant) => ({ name, fill: () => fillDocumentPreset(variant) }));
+
   return (
-    <div className="main-content">
+    <NativeAIControls busy={loading} context="pharmaceutical batch analysis" presets={documentPresets}><div className="main-content">
       <div className="page-header" style={{ marginBottom: 20 }}>
         <h1>Batch AI Analysis</h1>
         <p>Queue up to 10 documents for parallel compliance analysis</p>
@@ -115,7 +124,7 @@ function BatchAnalysis() {
       <div className="detail-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h3>Select Documents (max 10): {selected.length} selected</h3>
-          <input
+          <input data-ai-exclude
             type="text"
             placeholder="Search documents..."
             value={docSearch}
@@ -172,13 +181,7 @@ function BatchAnalysis() {
           ))}
           {streamSteps.find(s => s.type === 'complete') && (() => {
             const c = streamSteps.find(s => s.type === 'complete');
-            return (
-              <div style={{ marginTop: 12 }}>
-                {c.compliance_structured?.risk_level && (
-                  <p style={{ fontSize: 12 }}>Risk level: <strong style={{ color: c.compliance_structured.risk_level === 'critical' ? '#ef4444' : '#f59e0b' }}>{c.compliance_structured.risk_level}</strong> | Score: {c.compliance_structured.risk_score}</p>
-                )}
-              </div>
-            );
+            return <FormattedAIReport response={c} title="Streamed analysis result" />;
           })()}
         </div>
       )}
@@ -186,28 +189,12 @@ function BatchAnalysis() {
       {results && (
         <div className="detail-card">
           <h3>Batch Results: {results.successful}/{results.total} succeeded</h3>
-          {results.results.map((r) => (
-            <div key={r.document_id} style={{ marginBottom: 24, padding: 16, background: '#0f172a', borderRadius: 8 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <h4>{r.title || `Doc #${r.document_id}`}</h4>
-                {r.structured && (
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: r.structured.risk_level === 'critical' ? '#7f1d1d' : r.structured.risk_level === 'high' ? '#78350f' : '#14532d', color: '#e2e8f0' }}>
-                      {r.structured.risk_level || 'unknown'}
-                    </span>
-                    {r.structured.risk_score !== undefined && (
-                      <span style={{ fontSize: 11, color: '#94a3b8' }}>Score: {r.structured.risk_score}</span>
-                    )}
-                  </div>
-                )}
-              </div>
-              <p style={{ fontSize: 12, color: '#64748b' }}>{r.category} · {r.model} · {r.tokens} tokens</p>
-              {r.error ? (
-                <p style={{ color: '#ef4444' }}>Error: {r.error}</p>
-              ) : (
-                <div className="ai-output"><ReactMarkdown>{r.analysis}</ReactMarkdown></div>
-              )}
-            </div>
+          {results.results.map((result, index) => (
+            <FormattedAIReport
+              key={result.document_id || index}
+              response={result}
+              title={result.title || `Document ${result.document_id || index + 1}`}
+            />
           ))}
         </div>
       )}
@@ -215,19 +202,10 @@ function BatchAnalysis() {
       {digestResult && (
         <div className="detail-card">
           <h3>Weekly Compliance Digest ({digestResult.documentCount} documents)</h3>
-          <p style={{ fontSize: 12, color: '#64748b' }}>Model: {digestResult.model} · {digestResult.tokens} tokens</p>
-          {digestResult.structured?.key_concerns?.length > 0 && (
-            <div style={{ marginBottom: 12 }}>
-              <strong style={{ color: '#ef4444' }}>Key Concerns:</strong>
-              <ul style={{ margin: '4px 0 0 20px', fontSize: 13, color: '#94a3b8' }}>
-                {digestResult.structured.key_concerns.map((c, i) => <li key={i}>{c}</li>)}
-              </ul>
-            </div>
-          )}
-          <div className="ai-output"><ReactMarkdown>{digestResult.digest}</ReactMarkdown></div>
+          <FormattedAIReport response={digestResult} title="Weekly compliance digest" />
         </div>
       )}
-    </div>
+    </div></NativeAIControls>
   );
 }
 
