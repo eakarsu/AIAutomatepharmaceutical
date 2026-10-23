@@ -6,6 +6,8 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const demoEmail = import.meta.env.VITE_DEMO_EMAIL || '';
+  const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || '';
 
   const handleSubmit = async (e, demoLoginCredentials) => {
     e.preventDefault();
@@ -22,16 +24,14 @@ function Login({ onLogin }) {
     }
   };
 
-  const autoFill = () => {
-    const demoEmail = import.meta.env.VITE_DEMO_EMAIL || '';
-    const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || '';
-    if (!demoEmail || !demoPassword) {
-      setError('Demo credentials are unavailable in this environment.');
-      return;
-    }
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-    setError('');
+  const autoFill = async () => {
+    if (demoEmail && demoPassword) { setEmail(demoEmail); setPassword(demoPassword); setError(''); return; }
+    try {
+      const res = await fetch('/api/auth/demo-credentials', { cache: 'no-store' });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.email && data?.password) { setEmail(data.email); setPassword(data.password); setError(''); return; }
+    } catch {}
+    setError('Demo credentials are not configured for this environment.');
   };
 
   return (
@@ -71,8 +71,8 @@ function Login({ onLogin }) {
           </button>
         </form>
 
-        <button type="button" className="auto-fill-btn" onClick={autoFill}>
-          Fill Demo Credentials
+        <button type="button" className="auto-fill-btn" aria-label="Fill demo credentials" onClick={autoFill}>
+          Fill demo credentials
         </button>
       </div>
     </div>

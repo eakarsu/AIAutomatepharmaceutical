@@ -3,6 +3,7 @@ import { aiFeatures } from '../services/api';
 
 function AuditTrail() {
   const [items, setItems] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [filters, setFilters] = useState({ document_id: '', user_id: '' });
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -74,7 +75,7 @@ function AuditTrail() {
             {items.length === 0 ? (
               <tr><td colSpan="5" style={{ textAlign: 'center', padding: 20, color: '#64748b' }}>No audit entries</td></tr>
             ) : items.map((it) => (
-              <tr key={it.id}>
+              <tr key={it.id} onClick={() => setSelectedItem(it)} style={{ cursor: 'pointer' }}>
                 <td style={{ fontSize: 12 }}>{new Date(it.created_at || it.timestamp).toLocaleString()}</td>
                 <td>{it.document_id}</td>
                 <td>{it.user_id}</td>
@@ -93,6 +94,23 @@ function AuditTrail() {
           </div>
         )}
       </div>
+      {selectedItem && (
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setSelectedItem(null)}>
+          <div className="modal" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()} style={{ maxWidth: 640, width: '90%' }}>
+            <h2>Audit Entry Details</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, margin: '16px 0' }}>
+              {Object.entries(selectedItem).map(([k, v]) => (
+                <div key={k}><div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>{k}</div><div style={{ fontSize: 13 }}>{typeof v === 'object' ? JSON.stringify(v) : String(v ?? '—')}</div></div>
+              ))}
+            </div>
+            <div className="modal-actions" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button type="button" className="btn btn-primary btn-sm" onClick={() => setSelectedItem(null)}>Edit</button>
+              <button type="button" className="btn btn-danger btn-sm" onClick={() => setSelectedItem(null)}>Delete</button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSelectedItem(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

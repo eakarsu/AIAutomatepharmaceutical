@@ -42,6 +42,8 @@ app.use(generalLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/evidence-cases', authenticateToken, require('./routes/evidenceCases'));
+app.use('/api/tasks', authenticateToken, require('./routes/tasks26c').createTasksRouter({ pool: require('./db') }));
+app.use('/api/feature-ai', authenticateToken, require('./routes/featureAi26c').createFeatureAiRouter({ loadRecords: async (req) => { const pool=require('./db'); const tenantFor=u=>String(u.tenant_id||u.organization_id||`legacy-user:${u.id}`); const r=await pool.query('SELECT * FROM pharma_evidence_cases WHERE tenant_id=$1 ORDER BY updated_at DESC LIMIT 100',[tenantFor(req.user)]); return r.rows; } }));
 
 // Health check
 app.get('/api/health', (req, res) => {

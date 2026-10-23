@@ -28,6 +28,8 @@ function FeaturePage() {
   const [docs, setDocs] = useState([]);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [editingDoc, setEditingDoc] = useState(null);
   const [showTranscribe, setShowTranscribe] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
   const [report, setReport] = useState('');
@@ -59,8 +61,13 @@ function FeaturePage() {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await documents.create({ ...form, category });
+      if (editingDoc) {
+        await documents.update(editingDoc.id, { ...form, category });
+      } else {
+        await documents.create({ ...form, category });
+      }
       setShowModal(false);
+      setEditingDoc(null);
       setForm({ title: '', description: '', status: 'draft', priority: 'medium' });
       loadDocs();
     } catch (err) {
@@ -186,7 +193,7 @@ function FeaturePage() {
               </tr>
             ) : (
               docs.map(doc => (
-                <tr key={doc.id} onClick={() => navigate(`/document/${doc.id}`)}>
+                <tr key={doc.id} onClick={() => setSelectedDoc(doc)} style={{ cursor: 'pointer' }}>
                   <td className="doc-title">{doc.title}</td>
                   <td><span className={`status-badge ${doc.status}`}>{doc.status.replace('_', ' ')}</span></td>
                   <td><span className={`priority-badge ${doc.priority}`}>{doc.priority}</span></td>
@@ -208,6 +215,27 @@ function FeaturePage() {
         </div>
       )}
 
+      {selectedDoc && (
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setSelectedDoc(null)}>
+          <div className="modal" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()} style={{ maxWidth: 680, width: '90%' }}>
+            <button className="modal-close" onClick={() => setSelectedDoc(null)}>&#x2715;</button>
+            <h2>{selectedDoc.title}</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, margin: '16px 0' }}>
+              {Object.entries(selectedDoc).filter(([k]) => !['id', 'ai_summary', 'ai_compliance_notes', 'extracted_data'].includes(k)).map(([k, v]) => (
+                <div key={k} style={k === 'description' ? { gridColumn: '1 / -1' } : {}}>
+                  <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>{k.replace(/_/g, ' ')}</div>
+                  <div style={{ fontSize: 14, color: '#e2e8f0' }}>{String(v ?? '—')}</div>
+                </div>
+              ))}
+            </div>
+            <div className="modal-actions" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+              <button type="button" className="btn btn-primary btn-sm" onClick={() => { setEditingDoc(selectedDoc); setForm({ title: selectedDoc.title || '', description: selectedDoc.description || '', status: selectedDoc.status || 'draft', priority: selectedDoc.priority || 'medium' }); setSelectedDoc(null); setShowModal(true); }}>Edit</button>
+              <button type="button" className="btn btn-danger btn-sm" onClick={async () => { if (!window.confirm('Delete this document?')) return; try { await documents.delete(selectedDoc.id); setSelectedDoc(null); loadDocs(); } catch (e) { alert('Delete failed'); } }}>Delete</button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSelectedDoc(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>

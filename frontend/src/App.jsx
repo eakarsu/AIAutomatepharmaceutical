@@ -1,4 +1,5 @@
 import AIReportLibrary from "./components/AIReportLibrary";
+import FeaturePackPanel from './components/FeaturePackPanel';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
@@ -80,6 +81,7 @@ function App() {
         <Route path="/ai-tools/extensions" element={guard(<ExtensionsPage />)} />
         <Route path="/custom-views" element={guard(<CustomViewsPage />)} />
         <Route path="/capa-readiness-board" element={guard(<CapaReadinessBoard />)} />
+        <Route path="/feature-pack" element={<FeaturePackPanel />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       </div>
